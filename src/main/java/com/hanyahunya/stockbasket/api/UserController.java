@@ -2,6 +2,7 @@ package com.hanyahunya.stockbasket.api;
 import com.hanyahunya.stockbasket.domain.user.dto.*;
 import com.hanyahunya.stockbasket.domain.user.service.UserService;
 import com.hanyahunya.stockbasket.global.response.ApiResponse;
+import com.hanyahunya.stockbasket.global.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -31,8 +32,8 @@ public class UserController {
     }
 
     @DeleteMapping("/me")
-    public ResponseEntity<ApiResponse<Void>> deleteAccount(@AuthenticationPrincipal Long userId) {
-        userService.deleteAccount(userId);
+    public ResponseEntity<ApiResponse<Void>> deleteAccount(@AuthenticationPrincipal UserPrincipal user) {
+        userService.deleteAccount(user.getUserId());
         return ResponseEntity.ok(ApiResponse.ok(null));
     }
 }

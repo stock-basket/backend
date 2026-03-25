@@ -7,7 +7,11 @@ public interface UserService {
      * @param request
      */
     void register(RegisterRequest request);
+
+
     LoginResponse login(LoginRequest request);
+
+
     UserResponse getMyInfo(Long userId);
     void deleteAccount(Long userId);
 }

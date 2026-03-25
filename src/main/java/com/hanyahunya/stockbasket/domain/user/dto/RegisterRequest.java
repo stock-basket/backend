@@ -14,6 +14,4 @@ public class RegisterRequest {
             message = "비밀번호는 8~20자이며, 영문 대소문자, 숫자, 특수문자(@$!%*#?&)만 사용가능합니다."
     )
     private String password;
-
-    private String nickname;
 }
