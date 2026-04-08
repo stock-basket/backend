@@ -35,7 +35,7 @@ public class NewsController {
     }
 
     @GetMapping("/stock/{stockId}")
-    public ResponseEntity<ApiResponse<List<NewsResponse>>> getNewsByStock(@PathVariable Long stockId) {
+    public ResponseEntity<ApiResponse<List<NewsResponse>>> getNewsByStock(@PathVariable String stockId) {
         return ResponseEntity.ok(ApiResponse.ok(newsService.getNewsByStock(stockId)));
     }
 }
