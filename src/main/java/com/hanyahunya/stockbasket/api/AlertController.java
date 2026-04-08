@@ -20,6 +20,11 @@ public class AlertController {
         return ResponseEntity.ok(ApiResponse.ok(alertService.getMyAlerts(userId)));
     }
 
+    /**
+
+     * @param userId
+     * @return
+     */
     @GetMapping("/unread")
     public ResponseEntity<ApiResponse<List<AlertResponse>>> getUnreadAlerts(@AuthenticationPrincipal Long userId) {
         return ResponseEntity.ok(ApiResponse.ok(alertService.getUnreadAlerts(userId)));
