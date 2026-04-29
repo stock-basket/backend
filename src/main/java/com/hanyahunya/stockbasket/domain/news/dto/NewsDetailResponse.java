@@ -1,24 +1,27 @@
 package com.hanyahunya.stockbasket.domain.news.dto;
-import lombok.Builder;
-import lombok.Getter;
+
+import com.hanyahunya.stockbasket.domain.analysis.entity.SentimentType;
+
 import java.time.LocalDateTime;
 
-@Getter @Builder
-public class NewsDetailResponse {
-    private Long id;
-    private Long stockId;
-    private String stockName;
-    private String title;
-    private String content;
-    private String sourceName;
-    private String sourceUrl;
-    private LocalDateTime publishedAt;
-    private String sentimentType;
-    private int impactScore;
-    private int marketShockScore;
-    private int reliabilityScore;
-    private int shortTermImpact;
-    private int longTermImpact;
-    private String aiAnalysis;
-    private String aiVerdict;
-}
+/** 뉴스 상세 (분석 결과 포함) 응답 DTO */
+public record NewsDetailResponse(
+        Long          id,
+        String        stockCode,
+        String        stockName,
+        String        title,
+        String        content,
+        String        sourceName,
+        String        sourceUrl,
+        LocalDateTime publishedAt,
+
+        // 분석 결과
+        SentimentType sentimentType,
+        int           impactScore,
+        int           marketShockScore,
+        int           reliabilityScore,
+        int           shortTermImpact,
+        int           longTermImpact,
+        String        aiAnalysis,
+        String        aiVerdict
+) {}

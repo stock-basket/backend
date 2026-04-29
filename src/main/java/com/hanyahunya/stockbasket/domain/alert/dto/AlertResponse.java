@@ -1,15 +1,13 @@
 package com.hanyahunya.stockbasket.domain.alert.dto;
-import lombok.Builder;
-import lombok.Getter;
+import com.hanyahunya.stockbasket.domain.alert.entity.AlertType;
 import java.time.LocalDateTime;
 
-@Getter @Builder
-public class AlertResponse {
-    private Long id;
-    private String stockName;
-    private String alertType;
-    private String message;
-    private Double priceChangeRate;
-    private boolean isRead;
-    private LocalDateTime createdAt;
-}
+public record AlertResponse(
+        Long          id,
+        String        stockName,
+        AlertType alertType,         // PRICE_SPIKE | PRICE_DROP | HIGH_IMPACT_NEWS
+        String        message,
+        Double        priceChangeRate,   // 급등락 감지 시 변동률 (null 가능)
+        boolean       isRead,
+        LocalDateTime createdAt
+) {}

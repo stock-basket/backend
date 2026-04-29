@@ -5,23 +5,29 @@ import com.hanyahunya.stockbasket.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
     @Override
     public void register(RegisterRequest request) {
-        if(false) {
-            throw new BusinessException(UserErrorCode.USER_NOT_FOUND);
-        }
+        throw new BusinessException(UserErrorCode.USER_NOT_FOUND);
     }
 
     @Override
-    public LoginResponse login(LoginRequest request) { return null; }
+    public LoginResponse login(LoginRequest request) {
+        return null;
+    }
 
     @Override
-    public UserResponse getMyInfo(Long userId) { return null; }
+    public UserResponse getMyInfo(UUID userId) {
+        return null;
+    }
 
     @Override
-    public void deleteAccount(Long userId) {}
+    public void deleteAccount(UUID userId) {
+
+    }
 }

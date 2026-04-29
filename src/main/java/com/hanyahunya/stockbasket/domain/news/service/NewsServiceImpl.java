@@ -4,23 +4,34 @@ import com.hanyahunya.stockbasket.domain.news.dto.NewsResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class NewsServiceImpl implements NewsService {
 
     @Override
-    public List<NewsResponse> getNewsByStock(Long stockId) { return List.of(); }
+    public List<NewsResponse> getNewsByUser(UUID userId) {
+        return List.of();
+    }
 
     @Override
-    public List<NewsResponse> getNewsByUser(Long userId) { return List.of(); }
+    public List<NewsResponse> getNewsByUserAndSentiment(UUID userId, String sentimentType) {
+        return List.of();
+    }
 
     @Override
-    public List<NewsResponse> getNewsByUserAndSentiment(Long userId, String sentimentType) { return List.of(); }
+    public NewsDetailResponse getNewsDetail(Long newsId) {
+        return null;
+    }
 
     @Override
-    public NewsDetailResponse getNewsDetail(Long newsId) { return null; }
+    public List<NewsResponse> getUrgentNews(UUID userId) {
+        return List.of();
+    }
 
     @Override
-    public List<NewsResponse> getUrgentNews(Long userId) { return List.of(); }
+    public List<NewsResponse> getNewsByStock(String stockCode) {
+        return List.of();
+    }
 }
