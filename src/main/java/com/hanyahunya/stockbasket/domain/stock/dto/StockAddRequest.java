@@ -1,7 +1,8 @@
 package com.hanyahunya.stockbasket.domain.stock.dto;
-import lombok.Getter;
 
-@Getter
-public class StockAddRequest {
-    private String ticker;
-}
+import jakarta.validation.constraints.NotBlank;
+
+/** 바구니 추가 요청: 종목 코드(ticker) 로 추가 */
+public record StockAddRequest(
+        @NotBlank String ticker
+) {}
