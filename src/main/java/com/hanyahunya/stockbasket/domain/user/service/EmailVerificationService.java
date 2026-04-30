@@ -1,4 +1,4 @@
-package com.hanyahunya.stockbasket.global.auth;
+package com.hanyahunya.stockbasket.domain.user.service;
 
 /**
  * 회원가입 시 이메일 인증 코드 발송 및 검증을 담당하는 서비스 인터페이스.
