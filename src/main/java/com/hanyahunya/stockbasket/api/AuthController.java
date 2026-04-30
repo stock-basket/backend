@@ -2,7 +2,7 @@ package com.hanyahunya.stockbasket.api;
 
 import com.hanyahunya.stockbasket.domain.user.dto.EmailSendRequest;
 import com.hanyahunya.stockbasket.domain.user.dto.EmailVerifyRequest;
-import com.hanyahunya.stockbasket.global.auth.EmailVerificationService;
+import com.hanyahunya.stockbasket.domain.user.service.EmailVerificationService;
 import com.hanyahunya.stockbasket.global.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
