@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface NewsRepository extends JpaRepository<News, Long> {
-    List<News> findAllByStockIdOrderByPublishedAtDesc(Long stockId);
-    List<News> findAllByStockIdAndPublishedAtAfterOrderByPublishedAtDesc(Long stockId, LocalDateTime after);
+    List<News> findAllByStock_StockCodeOrderByPublishedAtDesc(String stockCode);
+    List<News> findAllByStock_StockCodeAndPublishedAtAfterOrderByPublishedAtDesc(String stockCode, LocalDateTime after);
     boolean existsBySourceUrl(String sourceUrl);
 }
