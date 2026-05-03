@@ -45,3 +45,8 @@ llm:
   gemini:
     api-key: ${GEMINI_API_KEY}
     model: ${GEMINI_MODEL}
+
+naver:
+  search:
+    client-id: ${NAVER_SEARCH_CLIENT_ID}
+    client-secret: ${NAVER_SEARCH_CLIENT_SECRET}
