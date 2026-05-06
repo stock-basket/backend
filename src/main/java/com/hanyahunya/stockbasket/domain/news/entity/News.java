@@ -28,6 +28,9 @@ public class News {
     @Column(nullable = false, unique = true)
     private String sourceUrl;
 
+    @Column
+    private String publisher;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime publishedAt;
 

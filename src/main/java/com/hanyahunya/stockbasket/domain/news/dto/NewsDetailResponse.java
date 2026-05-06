@@ -11,7 +11,7 @@ public record NewsDetailResponse(
         String        stockName,
         String        title,
         String        content,
-        String        sourceName,
+        String        publisher,
         String        sourceUrl,
         LocalDateTime publishedAt,
 

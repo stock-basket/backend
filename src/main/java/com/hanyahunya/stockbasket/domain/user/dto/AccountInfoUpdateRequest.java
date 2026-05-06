@@ -9,6 +9,5 @@ import java.util.UUID;
 /** 닉네임·이메일 변경 요청 */
 public record AccountInfoUpdateRequest(
         @JsonIgnore UUID   userId,      // SecurityContext 에서 주입, 역직렬화 제외
-        @Size(min = 2, max = 20) String nickname,
-        @Email               String email
+        @Size(min = 2, max = 20) String nickname
 ) {}

@@ -28,9 +28,15 @@ public class NewsAnalysis {
     private int shortTermImpact;
     private int longTermImpact;
 
+    /**
+     * ai 분석 내용 (ai가 분석한 긴 내용)
+     */
     @Column(columnDefinition = "TEXT")
     private String aiAnalysis;
 
+    /**
+     * ai 판단 결과 (짧은 ai comment 느씸)
+     */
     @Column(columnDefinition = "TEXT")
     private String aiVerdict;
 

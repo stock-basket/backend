@@ -38,4 +38,5 @@ public class Alert {
     @PrePersist
     protected void onCreate() { this.createdAt = LocalDateTime.now(); this.isRead = false; }
 
+    public void markRead() { this.isRead = true; }
 }

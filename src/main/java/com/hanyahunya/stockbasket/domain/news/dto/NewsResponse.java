@@ -10,9 +10,10 @@ public record NewsResponse(
         String        stockCode,
         String        stockName,
         String        title,
-        String        sourceName,
+        String        publisher,
         String        sourceUrl,
         LocalDateTime publishedAt,
+        // 이 밑은 null 이나 0 이면 아직 ai 분석이 진행중인 상황
         SentimentType sentimentType,   // POSITIVE | NEGATIVE | NEUTRAL
         int           impactScore,     // 0 ~ 100
         String        aiComment        // 한 줄 요약

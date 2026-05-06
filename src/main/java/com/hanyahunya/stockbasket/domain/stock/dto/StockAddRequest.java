@@ -1,8 +1,12 @@
 package com.hanyahunya.stockbasket.domain.stock.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.NotBlank;
 
-/** 바구니 추가 요청: 종목 코드(ticker) 로 추가 */
+import java.util.UUID;
+
+/** 바구니 추가 요청: 종목 코드(stockCode) 로 추가 */
 public record StockAddRequest(
-        @NotBlank String ticker
+        @JsonIgnore UUID userId,
+        @NotBlank String stockCode
 ) {}

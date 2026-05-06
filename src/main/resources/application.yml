@@ -50,3 +50,9 @@ naver:
   search:
     client-id: ${NAVER_SEARCH_CLIENT_ID}
     client-secret: ${NAVER_SEARCH_CLIENT_SECRET}
+
+kiwoom:
+  token-url: ${KIWOOM_TOKEN_URL:https://api.kiwoom.com/oauth2/token}
+  ws-url: ${KIWOOM_WS_URL:wss://api.kiwoom.com:10000/api/dostk/websocket}
+  appkey: ${KIWOOM_APPKEY}
+  secretkey: ${KIWOOM_SECRETKEY}

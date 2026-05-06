@@ -46,13 +46,8 @@ public class UserSettingServiceImpl implements UserSettingService{
     public void updateAccountInfo(AccountInfoUpdateRequest request) {
         User user = userRepository.findById(request.userId())
                 .orElseThrow(() -> new BusinessException(UserErrorCode.USER_NOT_FOUND));
-        if (request.email() != null) {
-            user.updateEmail(request.email());
-        }
 
-        if(request.nickname() != null) {
-            user.updateNickname(request.nickname());
-        }
+        user.updateNickname(request.nickname());
     }
 
     @Override
