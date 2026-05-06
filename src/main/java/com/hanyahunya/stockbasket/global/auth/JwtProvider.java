@@ -18,8 +18,13 @@ import java.util.UUID;
 @Component
 public class JwtProvider {
 
+    // 로그인용
     private static final String CLAIM_USER_ID = "userId";
     private static final String CLAIM_ROLE    = "role";
+    // 이메일 인증용
+    private static final String CLAIM_EMAIL      = "email";
+    private static final String CLAIM_VERIFIED   = "verified";
+    private static final long VERIFIED_TOKEN_VALID_MS = 10 * 60 * 1000L;
 
     private final SecretKey secretKey;
     private final long      accessTokenValidMs;
@@ -54,6 +59,26 @@ public class JwtProvider {
                 .compact();
     }
 
+    /**
+     * 이메일 인증 완료 토큰 발급
+     *
+     * <p>회원가입 플로우에서 인증 코드 검증 성공 시 발급되며,
+     * 이후 회원가입 요청 시 본인 인증 수단으로 사용된다.
+     *
+     * @param email 인증이 완료된 이메일 주소
+     * @return 서명된 JWT 문자열 (유효기간 10분)
+     */
+    public String createVerifiedToken(String email) {
+        Date now = new Date();
+        return Jwts.builder()
+                .claim(CLAIM_EMAIL, email)
+                .claim(CLAIM_VERIFIED, true)
+                .issuedAt(now)
+                .expiration(new Date(now.getTime() + VERIFIED_TOKEN_VALID_MS))
+                .signWith(secretKey)
+                .compact();
+    }
+
     // ── 토큰 파싱 ───────────────────────────────────────────────────────────────
 
     /**
@@ -68,6 +93,22 @@ public class JwtProvider {
         String userId = claims.get(CLAIM_USER_ID, String.class);
         String role   = claims.get(CLAIM_ROLE, String.class);
         return new UserPrincipal(userId, role);
+    }
+
+    /**
+     * 이메일 인증 완료 토큰 파싱
+     *
+     * @param token 이메일 인증 완료 토큰
+     * @return 인증된 이메일 주소
+     * @throws BusinessException INVALID_TOKEN — verified 클레임 없거나 위변조된 경우
+     * @throws BusinessException EXPIRED_TOKEN — 토큰 만료 (10분 초과)
+     */
+    public String parseVerifiedToken(String token) {
+        Claims claims = getClaims(token); // 만료/위변조 검증 포함
+        if (!Boolean.TRUE.equals(claims.get(CLAIM_VERIFIED, Boolean.class))) {
+            throw new BusinessException(TokenErrorCode.INVALID_TOKEN);
+        }
+        return claims.get(CLAIM_EMAIL, String.class);
     }
 
     /**

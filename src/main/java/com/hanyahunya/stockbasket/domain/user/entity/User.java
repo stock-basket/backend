@@ -43,6 +43,7 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "stock_code")
     )
     @MapKey(name = "stockCode")
+    @Builder.Default
     private Map<String, Stock> stocks = new HashMap<>();
 
     @Column(nullable = false, updatable = false)

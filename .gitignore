@@ -35,3 +35,9 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### docker
+.env
+
+### Claude Code
+.claude/settings.local.json

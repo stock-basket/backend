@@ -25,7 +25,7 @@ public class News {
     @Column(columnDefinition = "TEXT")
     private String content;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String sourceUrl;
 
     @Column(nullable = false, updatable = false)

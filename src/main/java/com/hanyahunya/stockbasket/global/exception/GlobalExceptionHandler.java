@@ -3,6 +3,7 @@ package com.hanyahunya.stockbasket.global.exception;
 import com.hanyahunya.stockbasket.global.response.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -54,6 +55,18 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of(
                         "VALID_400",
                         detail
+                ));
+    }
+
+    // 요청 바디 누락 및 JSON 파싱 에러 처리 (400 반환)
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException e) {
+        log.warn("[HttpMessageNotReadableException] 요청 바디 누락 또는 형식 오류: {}", e.getMessage());
+        return ResponseEntity
+                .badRequest()
+                .body(ErrorResponse.of(
+                        "VALID_400",
+                        "요청 바디가 누락되었거나 JSON 형식이 올바르지 않습니다."
                 ));
     }
 
