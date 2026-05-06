@@ -12,10 +12,12 @@ public interface UserService {
     /**
      * 회원가입
      *
+     * @param verifiedToken 이메일 인증 완료 토큰 (10분 유효, 이메일 추출에 사용)
      * @throws com.hanyahunya.stockbasket.global.exception.BusinessException
+     *         INVALID_TOKEN / EXPIRED_TOKEN — 인증 토큰 이상
      *         EMAIL_ALREADY_EXISTS(409) — 이미 가입된 이메일
      */
-    void register(RegisterRequest request);
+    void register(String verifiedToken, RegisterRequest request);
 
     /**
      * 로그인 후 access_token 반환

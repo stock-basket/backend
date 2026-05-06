@@ -25,7 +25,7 @@ public class UserSettingController {
     private final UserSettingService userSettingService;
 
     /**
-     * 닉네임·이메일 변경.
+     * 닉네임변경
      *
      * <pre>PATCH /api/users/me/account</pre>
      * <ul>
@@ -40,7 +40,7 @@ public class UserSettingController {
     ) {
         // userId 는 JSON body 에 포함되지 않으므로 새 레코드로 조합하여 서비스에 전달
         userSettingService.updateAccountInfo(
-                new AccountInfoUpdateRequest(principal.getUserId(), request.nickname(), request.email())
+                new AccountInfoUpdateRequest(principal.getUserId(), request.nickname())
         );
         return ResponseEntity.ok(ApiResponse.ok(null));
     }

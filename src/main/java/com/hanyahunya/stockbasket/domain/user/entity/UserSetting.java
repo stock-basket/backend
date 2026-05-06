@@ -2,6 +2,8 @@ package com.hanyahunya.stockbasket.domain.user.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Table(name = "user_settings")
@@ -16,6 +18,7 @@ public class UserSetting {
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 

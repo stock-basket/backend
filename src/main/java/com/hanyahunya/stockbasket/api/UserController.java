@@ -33,9 +33,10 @@ public class UserController {
      */
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<Void>> register(
+            @RequestHeader("X-Verified-Token") String verifiedToken,
             @RequestBody @Valid RegisterRequest request
     ) {
-        userService.register(request);
+        userService.register(verifiedToken, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(null));
     }
 
