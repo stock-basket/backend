@@ -6,11 +6,12 @@ import com.hanyahunya.stockbasket.domain.news.service.NewsService;
 import com.hanyahunya.stockbasket.global.response.ApiResponse;
 import com.hanyahunya.stockbasket.global.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * 뉴스 피드 관련 엔드포인트.
@@ -26,29 +27,22 @@ public class NewsController {
 
     /**
      * 내 바구니 종목의 뉴스 피드 조회.
-     *
-     * <pre>GET /api/news[?sentiment=POSITIVE|NEGATIVE|NEUTRAL]</pre>
-     * <p>{@code sentiment} 쿼리 파라미터가 없으면 전체를 반환한다.
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<NewsResponse>>> getMyNews(
+    public ResponseEntity<ApiResponse<Page<NewsResponse>>> getMyNews(
             @AuthenticationPrincipal UserPrincipal principal,
-            @RequestParam(required = false) String sentiment
+            @RequestParam(required = false) String sentiment,
+            @PageableDefault(size = 10) Pageable pageable
     ) {
-        List<NewsResponse> result = (sentiment != null)
-                ? newsService.getNewsByUserAndSentiment(principal.getUserId(), sentiment)
-                : newsService.getNewsByUser(principal.getUserId());
+        Page<NewsResponse> result = (sentiment != null)
+                ? newsService.getNewsByUserAndSentiment(principal.getUserId(), sentiment, pageable)
+                : newsService.getNewsByUser(principal.getUserId(), pageable);
 
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
     /**
      * 뉴스 상세 조회 (AI 분석 포함).
-     *
-     * <pre>GET /api/news/{newsId}</pre>
-     * <ul>
-     *   <li>실패: 404 — 존재하지 않는 뉴스</li>
-     * </ul>
      */
     @GetMapping("/{newsId}")
     public ResponseEntity<ApiResponse<NewsDetailResponse>> getNewsDetail(
@@ -60,25 +54,26 @@ public class NewsController {
     /**
      * 긴급(고영향) 뉴스 조회.
      *
-     * <pre>GET /api/news/urgent</pre>
-     * <p>내 바구니 종목 중 impactScore 가 높거나 가격 알림이 발생한 뉴스만 반환.
+     * 💡 변경점: List -> Page 로 변경 및 파라미터에 Pageable 추가
      */
     @GetMapping("/urgent")
-    public ResponseEntity<ApiResponse<List<NewsResponse>>> getUrgentNews(
-            @AuthenticationPrincipal UserPrincipal principal
+    public ResponseEntity<ApiResponse<Page<NewsResponse>>> getUrgentNews(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PageableDefault(size = 5) Pageable pageable // 긴급 뉴스는 보통 조금씩 보므로 기본 사이즈를 5로 조정
     ) {
-        return ResponseEntity.ok(ApiResponse.ok(newsService.getUrgentNews(principal.getUserId())));
+        return ResponseEntity.ok(ApiResponse.ok(newsService.getUrgentNews(principal.getUserId(), pageable)));
     }
 
     /**
      * 특정 종목의 뉴스 목록 조회.
      *
-     * <pre>GET /api/news/stock/{stockCode}</pre>
+     * 💡 변경점: 특정 종목(예: 삼성전자)의 무한히 쌓이는 뉴스 데이터를 감당하기 위해 Page 로 변경
      */
     @GetMapping("/stock/{stockCode}")
-    public ResponseEntity<ApiResponse<List<NewsResponse>>> getNewsByStock(
-            @PathVariable String stockCode
+    public ResponseEntity<ApiResponse<Page<NewsResponse>>> getNewsByStock(
+            @PathVariable String stockCode,
+            @PageableDefault(size = 10) Pageable pageable
     ) {
-        return ResponseEntity.ok(ApiResponse.ok(newsService.getNewsByStock(stockCode)));
+        return ResponseEntity.ok(ApiResponse.ok(newsService.getNewsByStock(stockCode, pageable)));
     }
 }
