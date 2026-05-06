@@ -6,7 +6,6 @@ package com.hanyahunya.stockbasket.domain.stock.dto;
  */
 public record StockResponse(
         String stockCode,
-        String ticker,
         String name,
         String market,           // "KOSPI" | "KOSDAQ"
         int    positiveNewsCount,
