@@ -4,6 +4,10 @@ import com.hanyahunya.stockbasket.domain.news.entity.News;
 import com.hanyahunya.stockbasket.domain.news.repository.NewsRepository;
 import com.hanyahunya.stockbasket.domain.stock.entity.Stock;
 import com.hanyahunya.stockbasket.domain.stock.repository.StockRepository;
+import com.hanyahunya.stockbasket.infra.news.crawler.NewsCrawlResult;
+import com.hanyahunya.stockbasket.infra.news.crawler.NewsCrawler;
+import com.hanyahunya.stockbasket.infra.news.crawler.NewsCrawlerFactory;
+import com.hanyahunya.stockbasket.infra.news.crawler.Provider;
 import com.hanyahunya.stockbasket.infra.news.dto.NaverNewsResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -27,16 +31,20 @@ public class NaverNewsIngestionService implements NewsIngestionService {
     private final StockRepository stockRepository;
     private final NewsRepository newsRepository;
     private final RestClient restClient;
+    private final NewsCrawlerFactory newsCrawlerFactory;
 
     public NaverNewsIngestionService(
             NaverNewsProperties props,
             StockRepository stockRepository,
             NewsRepository newsRepository,
-            @Qualifier("naverNewsRestClient") RestClient restClient) {
+            @Qualifier("naverNewsRestClient") RestClient restClient,
+            NewsCrawlerFactory newsCrawlerFactory
+    ) {
         this.props = props;
         this.stockRepository = stockRepository;
         this.newsRepository = newsRepository;
         this.restClient = restClient;
+        this.newsCrawlerFactory = newsCrawlerFactory;
     }
 
     @Override
@@ -69,15 +77,31 @@ public class NaverNewsIngestionService implements NewsIngestionService {
             return;
         }
 
+        NewsCrawler crawler = newsCrawlerFactory.getNewsCrawler(Provider.NAVER);
         int saved = 0;
         for (NaverNewsResponse.Item item : response.items()) {
             if (newsRepository.existsBySourceUrl(item.link())) continue;
             try {
+                NewsCrawlResult crawlResult = crawler.crawl(item.link());
+
+                String finalContent = stripHtml(item.description());
+                String finalPublisher = null;
+
+                if (crawlResult != null) {
+                    if (crawlResult.getContent() != null && !crawlResult.getContent().isBlank()) {
+                        finalContent = crawlResult.getContent();
+                    }
+                    if (crawlResult.getPublisher() != null && !crawlResult.getPublisher().isBlank()) {
+                        finalPublisher = crawlResult.getPublisher();
+                    }
+                }
+
                 newsRepository.save(News.builder()
                         .stock(stock)
                         .title(stripHtml(item.title()))
-                        .content(stripHtml(item.description()))
+                        .content(finalContent)
                         .sourceUrl(item.link())
+                        .publisher(finalPublisher)
                         .publishedAt(parsePubDate(item.pubDate()))
                         .build());
                 saved++;
