@@ -11,4 +11,7 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
     List<Alert> findAllByUserIdAndReadIsFalseOrderByCreatedAtDesc(UUID userId);
     int countByUserIdAndReadIsFalse(UUID userId);
     List<Alert> findByAlertTypeInAndCreatedAtAfter(List<AlertType> types, LocalDateTime after);
+
+    boolean existsByUser_IdAndStock_StockCodeAndAlertTypeAndCreatedAtAfter(
+            UUID userId, String stockCode, AlertType alertType, LocalDateTime after);
 }
