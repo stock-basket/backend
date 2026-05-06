@@ -52,9 +52,11 @@ services:
       GEMINI_MODEL: ${GEMINI_MODEL}
       NAVER_SEARCH_CLIENT_ID: ${NAVER_SEARCH_CLIENT_ID}
       NAVER_SEARCH_CLIENT_SECRET: ${NAVER_SEARCH_CLIENT_SECRET}
-      
+      KIWOOM_APPKEY: ${KIWOOM_APPKEY}
+      KIWOOM_SECRETKEY: ${KIWOOM_SECRETKEY}
+
     ports:
-      - "8080:8080"
+      - "8081:8080"
     depends_on:
       mysql:
         condition: service_healthy

@@ -35,7 +35,7 @@ public class SecurityConfig {
             "/api/users/register",
             "/api/users/login",
             "/api/auth/email/send",
-            "/api/auth/email/verify",
+            "/api/auth/email/verify"
     };
 
     // ── Bean 정의 ─────────────────────────────────────────────────────────────
