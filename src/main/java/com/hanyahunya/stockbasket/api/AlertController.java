@@ -20,7 +20,9 @@ import java.util.List;
 @RequestMapping("/api/alerts")
 @RequiredArgsConstructor
 public class AlertController {
-
+    /**
+     * test
+     */
     private final AlertService alertService;
 
     /**

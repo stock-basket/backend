@@ -54,5 +54,16 @@ public class User {
         this.createdAt = LocalDateTime.now();
     }
 
+    public void updateEmail(String email) {
+        this.email = email;
+    }
+
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public void updatePassword(String encodedPassword) {
+        this.password = encodedPassword;
+    }
 //    public enum PlanType { FREE, PRO, ENTERPRISE }
 }
