@@ -43,10 +43,9 @@ public class AuthController {
      * <p>코드 불일치 또는 만료 시 401 반환.
      */
     @PostMapping("/email/verify")
-    public ResponseEntity<ApiResponse<Void>> verifyCode(
+    public ResponseEntity<ApiResponse<String>> verifyCode(
             @RequestBody @Valid EmailVerifyRequest request
     ) {
-        emailVerificationService.verifyCode(request.email(), request.code());
-        return ResponseEntity.ok(ApiResponse.ok(null));
+        return ResponseEntity.ok(ApiResponse.ok(emailVerificationService.verifyCode(request.email(), request.code())));
     }
 }
