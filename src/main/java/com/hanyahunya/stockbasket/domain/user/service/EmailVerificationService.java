@@ -24,5 +24,5 @@ public interface EmailVerificationService {
      * @throws com.hanyahunya.stockbasket.global.exception.BusinessException
      *         코드가 만료되었거나 일치하지 않는 경우 (TOKEN_401)
      */
-    void verifyCode(String email, String code);
+    String verifyCode(String email, String code);
 }

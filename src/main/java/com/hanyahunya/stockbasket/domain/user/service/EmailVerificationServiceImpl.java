@@ -3,6 +3,7 @@ package com.hanyahunya.stockbasket.domain.user.service;
 import com.hanyahunya.stockbasket.domain.mail.service.MailService;
 import com.hanyahunya.stockbasket.domain.user.UserErrorCode;
 import com.hanyahunya.stockbasket.domain.user.repository.UserRepository;
+import com.hanyahunya.stockbasket.global.auth.JwtProvider;
 import com.hanyahunya.stockbasket.global.auth.TokenErrorCode;
 import com.hanyahunya.stockbasket.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ class EmailVerificationServiceImpl implements EmailVerificationService {
 
     private final UserRepository userRepository;
     private final MailService    mailService;
+    private final JwtProvider jwtProvider;
     private final SecureRandom   random = new SecureRandom();
 
     // email → (code, expiry)
@@ -53,7 +55,7 @@ class EmailVerificationServiceImpl implements EmailVerificationService {
     }
 
     @Override
-    public void verifyCode(String email, String code) {
+    public String verifyCode(String email, String code) {
         VerificationEntry entry = store.get(email);
 
         if (entry == null || entry.isExpired() || !entry.code().equals(code)) {
@@ -61,6 +63,7 @@ class EmailVerificationServiceImpl implements EmailVerificationService {
         }
 
         store.remove(email); // 검증 완료 후 즉시 삭제 (재사용 방지)
+        return jwtProvider.createVerifiedToken(email);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
