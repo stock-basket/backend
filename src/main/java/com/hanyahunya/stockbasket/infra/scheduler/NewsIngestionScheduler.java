@@ -40,21 +40,21 @@ public class NewsIngestionScheduler {
         newsIngestionService.ingestAll(10);
     }
 
-    // 급등락 감지: 실시간 주가 추적 방식으로 전환 예정 — 스케줄러 방식 보류
-//    @Scheduled(cron = "0 */5 9-15 * * MON-FRI", zone = "Asia/Seoul")
-//    public void priceAlertTriggeredIngest() {
-//        LocalDateTime cutoff = LocalDateTime.now().minusMinutes(10);
-//        List<String> stockCodes = alertRepository
-//                .findByAlertTypeInAndCreatedAtAfter(
-//                        List.of(AlertType.PRICE_SPIKE, AlertType.PRICE_DROP), cutoff)
-//                .stream()
-//                .map(a -> a.getStock().getStockCode())
-//                .distinct()
-//                .toList();
-//
-//        if (stockCodes.isEmpty()) return;
-//
-//        log.info("[NewsScheduler] 급등락 감지 — {} 종목 뉴스 수집", stockCodes.size());
-//        stockCodes.forEach(code -> newsIngestionService.ingestByStock(code, 10));
-//    }
+    // 급등락 발생 종목 뉴스 추가 수집 (5분마다, 장중)
+    @Scheduled(cron = "0 */5 9-15 * * MON-FRI", zone = "Asia/Seoul")
+    public void priceAlertTriggeredIngest() {
+        LocalDateTime cutoff = LocalDateTime.now().minusMinutes(10);
+        List<String> stockCodes = alertRepository
+                .findByAlertTypeInAndCreatedAtAfter(
+                        List.of(AlertType.PRICE_SPIKE, AlertType.PRICE_DROP), cutoff)
+                .stream()
+                .map(a -> a.getStock().getStockCode())
+                .distinct()
+                .toList();
+
+        if (stockCodes.isEmpty()) return;
+
+        log.info("[NewsScheduler] 급등락 감지 — {} 종목 뉴스 수집", stockCodes.size());
+        stockCodes.forEach(code -> newsIngestionService.ingestByStock(code, 10));
+    }
 }
