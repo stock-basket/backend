@@ -59,6 +59,10 @@ naver:
   search:
     client-id: ${NAVER_SEARCH_CLIENT_ID}
     client-secret: ${NAVER_SEARCH_CLIENT_SECRET}
+    url-filter:
+      enabled: ${NAVER_URL_FILTER_ENABLED:true}
+      allowed-patterns:
+        - "https://n.news.naver.com"
 
 kiwoom:
   token-url: ${KIWOOM_TOKEN_URL:https://api.kiwoom.com/oauth2/token}

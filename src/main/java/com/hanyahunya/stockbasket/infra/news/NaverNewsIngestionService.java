@@ -2,6 +2,7 @@ package com.hanyahunya.stockbasket.infra.news;
 
 import com.hanyahunya.stockbasket.domain.analysis.service.AnalysisService;
 import com.hanyahunya.stockbasket.domain.news.entity.News;
+import com.hanyahunya.stockbasket.infra.news.NewsUrlFilterProperties;
 import com.hanyahunya.stockbasket.domain.news.repository.NewsRepository;
 import com.hanyahunya.stockbasket.domain.stock.entity.Stock;
 import com.hanyahunya.stockbasket.domain.stock.repository.StockRepository;
@@ -34,6 +35,7 @@ public class NaverNewsIngestionService implements NewsIngestionService {
     private final RestClient restClient;
     private final NewsCrawlerFactory newsCrawlerFactory;
     private final AnalysisService analysisService;
+    private final NewsUrlFilterProperties urlFilter;
 
     public NaverNewsIngestionService(
             NaverNewsProperties props,
@@ -41,7 +43,8 @@ public class NaverNewsIngestionService implements NewsIngestionService {
             NewsRepository newsRepository,
             @Qualifier("naverNewsRestClient") RestClient restClient,
             NewsCrawlerFactory newsCrawlerFactory,
-            AnalysisService analysisService
+            AnalysisService analysisService,
+            NewsUrlFilterProperties urlFilter
     ) {
         this.props = props;
         this.stockRepository = stockRepository;
@@ -49,6 +52,7 @@ public class NaverNewsIngestionService implements NewsIngestionService {
         this.restClient = restClient;
         this.newsCrawlerFactory = newsCrawlerFactory;
         this.analysisService = analysisService;
+        this.urlFilter = urlFilter;
     }
 
     @Override
@@ -84,6 +88,10 @@ public class NaverNewsIngestionService implements NewsIngestionService {
         NewsCrawler crawler = newsCrawlerFactory.getNewsCrawler(Provider.NAVER);
         int saved = 0;
         for (NaverNewsResponse.Item item : response.items()) {
+            if (!urlFilter.isAllowed(item.link())) {
+                log.debug("[NewsIngestion] URL 필터로 제외: {}", item.link());
+                continue;
+            }
             if (newsRepository.existsBySourceUrl(item.link())) continue;
             try {
                 NewsCrawlResult crawlResult = crawler.crawl(item.link());
