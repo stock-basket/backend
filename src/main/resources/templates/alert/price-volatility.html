@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${stockName} + ' 주가 ' + ${alertLabel} + ' 알림'">주가 알림</title>
+    <style>
+        body { margin: 0; padding: 0; background-color: #f4f4f4; font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; }
+        .wrapper { max-width: 520px; margin: 40px auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .header { background-color: #1a1a2e; padding: 32px 40px; text-align: center; }
+        .header h1 { margin: 0; color: #ffffff; font-size: 22px; letter-spacing: 1px; }
+        .body { padding: 40px; color: #333333; }
+        .body p { margin: 0 0 16px; font-size: 15px; line-height: 1.6; }
+        .title { font-size: 18px; font-weight: bold; margin-bottom: 24px !important; }
+        .alert-box { margin: 24px 0; border-radius: 8px; padding: 20px 24px; text-align: center; }
+        .alert-box.spike { background-color: #fff0f0; border: 1px solid #ffcdd2; }
+        .alert-box.drop  { background-color: #e8f0fe; border: 1px solid #bbdefb; }
+        .alert-box .price { font-size: 32px; font-weight: bold; letter-spacing: 2px; }
+        .alert-box.spike .price { color: #e53935; }
+        .alert-box.drop  .price { color: #1565c0; }
+        .alert-box .label { font-size: 14px; margin-top: 6px; }
+        .alert-box.spike .label { color: #c62828; }
+        .alert-box.drop  .label { color: #0d47a1; }
+        .info-table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+        .info-table td { padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+        .info-table td:first-child { color: #888888; width: 50%; }
+        .info-table td:last-child { font-weight: 600; text-align: right; }
+        .footer { background-color: #f9f9f9; padding: 20px 40px; text-align: center; font-size: 12px; color: #aaaaaa; border-top: 1px solid #eeeeee; }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <div class="header">
+        <h1>StockBasket</h1>
+    </div>
+    <div class="body">
+        <p class="title" th:text="${stockName} + ' 주가 ' + ${alertLabel} + ' 알림'">삼성전자 주가 급등 알림</p>
+        <p>바스켓에 담긴 종목의 주가가 설정하신 기준을 초과했습니다.</p>
+
+        <div class="alert-box" th:classappend="${alertLabel == '급등'} ? 'spike' : 'drop'">
+            <div class="price">
+                <span th:text="${alertLabel == '급등'} ? '+' : '-'">+</span><span th:text="${changeRate} + '%'">5.23%</span>
+            </div>
+            <div class="label" th:text="${currentPrice} + '원'">75,400원</div>
+        </div>
+
+        <table class="info-table">
+            <tr>
+                <td>현재가</td>
+                <td th:text="${currentPrice} + '원'">75,400원</td>
+            </tr>
+            <tr>
+                <td>기준가 (장 시작)</td>
+                <td th:text="${referencePrice} + '원'">71,600원</td>
+            </tr>
+            <tr>
+                <td>등락률</td>
+                <td th:text="(${alertLabel == '급등'} ? '+' : '-') + ${changeRate} + '%'"
+                    th:style="${alertLabel == '급등'} ? 'color:#e53935' : 'color:#1565c0'">+5.23%</td>
+            </tr>
+            <tr>
+                <td>발동 기준</td>
+                <td th:text="'±' + ${threshold} + '%'">±5.0%</td>
+            </tr>
+        </table>
+
+        <p style="font-size:13px; color:#888888;">알림 설정은 StockBasket 앱에서 변경하실 수 있습니다.</p>
+    </div>
+    <div class="footer">
+        &copy; 2026 StockBasket. All rights reserved.
+    </div>
+</div>
+</body>
+</html>
