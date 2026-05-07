@@ -12,4 +12,6 @@ public class AnalysisResult {
     private int longTermImpact;
     private String aiAnalysis;
     private String aiVerdict;
+    private String keywords;
+    private String keyPoints;
 }

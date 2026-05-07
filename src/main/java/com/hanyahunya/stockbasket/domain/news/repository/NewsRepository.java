@@ -38,4 +38,7 @@ public interface NewsRepository extends JpaRepository<News, Long> {
     Page<News> findUrgentNewsByUserId(@Param("userId") UUID userId, Pageable pageable);
 
     Page<News> findAllByStock_StockCodeOrderByPublishedAtDesc(String stockCode, Pageable pageable);
+
+    @Query("SELECT n FROM News n WHERE n NOT IN (SELECT na.news FROM NewsAnalysis na)")
+    List<News> findAllWithoutAnalysis();
 }

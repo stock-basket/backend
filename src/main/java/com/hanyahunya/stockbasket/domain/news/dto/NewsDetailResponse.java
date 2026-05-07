@@ -23,5 +23,7 @@ public record NewsDetailResponse(
         int           shortTermImpact,
         int           longTermImpact,
         String        aiAnalysis,
-        String        aiVerdict
+        String        aiVerdict,
+        String        keywords,
+        String        keyPoints
 ) {}

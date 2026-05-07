@@ -1,5 +1,6 @@
 package com.hanyahunya.stockbasket.infra.news;
 
+import com.hanyahunya.stockbasket.domain.analysis.service.AnalysisService;
 import com.hanyahunya.stockbasket.domain.news.entity.News;
 import com.hanyahunya.stockbasket.domain.news.repository.NewsRepository;
 import com.hanyahunya.stockbasket.domain.stock.entity.Stock;
@@ -32,19 +33,22 @@ public class NaverNewsIngestionService implements NewsIngestionService {
     private final NewsRepository newsRepository;
     private final RestClient restClient;
     private final NewsCrawlerFactory newsCrawlerFactory;
+    private final AnalysisService analysisService;
 
     public NaverNewsIngestionService(
             NaverNewsProperties props,
             StockRepository stockRepository,
             NewsRepository newsRepository,
             @Qualifier("naverNewsRestClient") RestClient restClient,
-            NewsCrawlerFactory newsCrawlerFactory
+            NewsCrawlerFactory newsCrawlerFactory,
+            AnalysisService analysisService
     ) {
         this.props = props;
         this.stockRepository = stockRepository;
         this.newsRepository = newsRepository;
         this.restClient = restClient;
         this.newsCrawlerFactory = newsCrawlerFactory;
+        this.analysisService = analysisService;
     }
 
     @Override
@@ -96,7 +100,7 @@ public class NaverNewsIngestionService implements NewsIngestionService {
                     }
                 }
 
-                newsRepository.save(News.builder()
+                News savedNews = newsRepository.save(News.builder()
                         .stock(stock)
                         .title(stripHtml(item.title()))
                         .content(finalContent)
@@ -104,6 +108,7 @@ public class NaverNewsIngestionService implements NewsIngestionService {
                         .publisher(finalPublisher)
                         .publishedAt(parsePubDate(item.pubDate()))
                         .build());
+                analysisService.analyzeAndSave(savedNews.getId());
                 saved++;
             } catch (DataIntegrityViolationException ignored) {}
         }

@@ -108,7 +108,9 @@ public class NewsServiceImpl implements NewsService {
                 na != null ? na.getShortTermImpact() : 0,
                 na != null ? na.getLongTermImpact() : 0,
                 na != null ? na.getAiAnalysis() : null,
-                na != null ? na.getAiVerdict() : null
+                na != null ? na.getAiVerdict() : null,
+                na != null ? na.getKeywords() : null,
+                na != null ? na.getKeyPoints() : null
         );
     }
 }

@@ -10,7 +10,7 @@ spring:
 
   jpa:
     hibernate.ddl-auto: update
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
@@ -43,8 +43,17 @@ claude:
 
 llm:
   gemini:
-    api-key: ${GEMINI_API_KEY}
-    model: ${GEMINI_MODEL}
+    api-key: ${GEMINI_API_KEY:}
+    model: ${GEMINI_MODEL:gemini-2.0-flash}
+  nvidia:
+    api-key: ${NVIDIA_API_KEY:}
+    model: ${NVIDIA_MODEL:meta/llama-3.1-405b-instruct}
+    base-url: https://integrate.api.nvidia.com/v1
+  enabled:
+    claude: ${LLM_CLAUDE_ENABLED:true}
+    openai: ${LLM_OPENAI_ENABLED:true}
+    gemini: ${LLM_GEMINI_ENABLED:true}
+    nvidia: ${LLM_NVIDIA_ENABLED:true}
 
 naver:
   search:
