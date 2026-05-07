@@ -4,7 +4,6 @@ import com.hanyahunya.stockbasket.infra.chart.ChartSseRegistry;
 import com.hanyahunya.stockbasket.infra.kiwoom.KiwoomWebSocketClient;
 import com.hanyahunya.stockbasket.infra.kiwoom.PriceStore;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,7 +27,7 @@ public class ChartController {
      * 접속 시점의 현재가를 첫 이벤트로 즉시 전송하고,
      * 이후 Kiwoom tick 마다 한 번씩 전송한다.
      */
-    @GetMapping(value = "/{stockCode}/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @GetMapping("/{stockCode}/stream")
     public SseEmitter stream(@PathVariable String stockCode) {
         SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
 

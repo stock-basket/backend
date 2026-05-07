@@ -32,7 +32,11 @@ public class ChartSseRegistry {
     /** Kiwoom tick 수신 시 해당 종목 구독자 전체에게 전송 */
     public void broadcast(String stockCode, long price) {
         CopyOnWriteArrayList<SseEmitter> list = emitters.get(stockCode);
-        if (list == null || list.isEmpty()) return;
+        if (list == null || list.isEmpty()) {
+            log.debug("[Chart SSE] broadcast 건너뜀 — 구독자 없음: {}", stockCode);
+            return;
+        }
+        log.info("[Chart SSE] broadcast — stockCode={}, price={}, 구독자={}", stockCode, price, list.size());
 
         String json = "{\"stockCode\":\"%s\",\"price\":%d,\"time\":\"%s\"}"
                 .formatted(stockCode, price, Instant.now());

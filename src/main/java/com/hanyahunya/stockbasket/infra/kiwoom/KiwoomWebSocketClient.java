@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
+import java.nio.ByteBuffer;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.time.ZoneId;
@@ -27,6 +28,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -49,13 +51,23 @@ public class KiwoomWebSocketClient implements ApplicationListener<ApplicationRea
     private final ChartSseRegistry chartSseRegistry;
     private final CandleAggregator candleAggregator;
 
+    private static final int PING_INTERVAL_SEC = 20;
+
     private volatile WebSocket webSocket;
     private final Set<String> subscribedCodes = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private final AtomicInteger reconnectDelay = new AtomicInteger(3);
+    private volatile ScheduledFuture<?> pingFuture;
 
     private final ScheduledExecutorService reconnectExecutor =
             Executors.newSingleThreadScheduledExecutor(r -> {
                 Thread t = new Thread(r, "kiwoom-reconnect");
+                t.setDaemon(true);
+                return t;
+            });
+
+    private final ScheduledExecutorService pingExecutor =
+            Executors.newSingleThreadScheduledExecutor(r -> {
+                Thread t = new Thread(r, "kiwoom-ping");
                 t.setDaemon(true);
                 return t;
             });
@@ -76,6 +88,7 @@ public class KiwoomWebSocketClient implements ApplicationListener<ApplicationRea
 
     /** 장 종료 스케줄러에서 호출 */
     public void disconnect() {
+        cancelPing();
         subscribedCodes.clear();
         WebSocket ws = webSocket;
         webSocket = null;
@@ -103,8 +116,6 @@ public class KiwoomWebSocketClient implements ApplicationListener<ApplicationRea
 
             sendJson("{\"trnm\":\"LOGIN\",\"token\":\"" + token + "\"}");
 
-            loadAndSubscribeAll();
-
         } catch (Exception e) {
             log.error("[Kiwoom] 연결 실패: {}", e.getMessage());
             scheduleReconnect();
@@ -112,15 +123,18 @@ public class KiwoomWebSocketClient implements ApplicationListener<ApplicationRea
     }
 
     private void loadAndSubscribeAll() {
-        List<String> codes = stockRepository.findVolatilityEnabledStockCodes();
-        if (codes.isEmpty()) {
-            log.info("[Kiwoom] 변동성 알림 활성 종목 없음 — 구독 건너뜀");
+        List<String> dbCodes = stockRepository.findVolatilityEnabledStockCodes();
+        dbCodes.forEach(priceStore::initStock);
+        subscribedCodes.addAll(dbCodes);
+
+        if (subscribedCodes.isEmpty()) {
+            log.info("[Kiwoom] 구독할 종목 없음 — 구독 건너뜀");
             return;
         }
-        subscribedCodes.addAll(codes);
-        codes.forEach(priceStore::initStock);
-        sendReg(codes);
-        log.info("[Kiwoom] SUBSCRIBED {} 종목", codes.size());
+        List<String> all = new java.util.ArrayList<>(subscribedCodes);
+        sendReg(all);
+        log.info("[Kiwoom] SUBSCRIBED {} 종목 (DB:{}, 차트:{})",
+                all.size(), dbCodes.size(), all.size() - dbCodes.size());
     }
 
     /** StockServiceImpl.addToBasket()에서 호출 — 신규 종목 실시간 구독 */
@@ -172,6 +186,25 @@ public class KiwoomWebSocketClient implements ApplicationListener<ApplicationRea
         }
     }
 
+    private void startPing() {
+        cancelPing();
+        pingFuture = pingExecutor.scheduleAtFixedRate(() -> {
+            WebSocket ws = webSocket;
+            if (ws != null && !ws.isInputClosed()) {
+                ws.sendPing(ByteBuffer.allocate(0));
+                log.debug("[Kiwoom] PING 전송");
+            }
+        }, PING_INTERVAL_SEC, PING_INTERVAL_SEC, TimeUnit.SECONDS);
+    }
+
+    private void cancelPing() {
+        ScheduledFuture<?> f = pingFuture;
+        if (f != null) {
+            f.cancel(false);
+            pingFuture = null;
+        }
+    }
+
     private void scheduleReconnect() {
         if (!isMarketHours()) {
             log.info("[Kiwoom] 장외 시간 — 재연결 건너뜀");
@@ -184,11 +217,13 @@ public class KiwoomWebSocketClient implements ApplicationListener<ApplicationRea
 
     @PreDestroy
     public void shutdown() {
+        cancelPing();
         WebSocket ws = webSocket;
         if (ws != null) {
             ws.sendClose(WebSocket.NORMAL_CLOSURE, "shutdown");
         }
         reconnectExecutor.shutdownNow();
+        pingExecutor.shutdownNow();
     }
 
     private class MessageListener implements WebSocket.Listener {
@@ -203,6 +238,13 @@ public class KiwoomWebSocketClient implements ApplicationListener<ApplicationRea
                 buffer.setLength(0);
                 handleMessage(raw);
             }
+            ws.request(1);
+            return null;
+        }
+
+        @Override
+        public CompletionStage<?> onPong(WebSocket ws, ByteBuffer message) {
+            log.debug("[Kiwoom] PONG 수신");
             ws.request(1);
             return null;
         }
@@ -229,6 +271,8 @@ public class KiwoomWebSocketClient implements ApplicationListener<ApplicationRea
                     String returnCode = node.path("return_code").asText();
                     if ("0".equals(returnCode)) {
                         log.info("[Kiwoom] LOGIN OK");
+                        startPing();
+                        loadAndSubscribeAll();
                     } else {
                         log.error("[Kiwoom] LOGIN 거부: {}", raw);
                     }
@@ -236,14 +280,23 @@ public class KiwoomWebSocketClient implements ApplicationListener<ApplicationRea
                 }
 
                 if ("REAL".equals(trnm)) {
+                    log.debug("[Kiwoom] REAL raw: {}", raw);
                     JsonNode dataArr = node.path("data");
-                    if (!dataArr.isArray() || dataArr.isEmpty()) return;
+                    if (!dataArr.isArray() || dataArr.isEmpty()) {
+                        log.warn("[Kiwoom] REAL data 배열 비어있음: {}", raw);
+                        return;
+                    }
 
                     JsonNode dataNode = dataArr.get(0);
-                    String stockCode = dataNode.path("item_no").asText();
-                    String rawPrice = dataNode.path("values").path("10").asText();
+                    String stockCode = dataNode.path("item").textValue();
+                    String rawPrice  = dataNode.path("values").path("10").textValue();
 
-                    if (stockCode.isBlank() || rawPrice.isBlank()) return;
+                    log.info("[Kiwoom] REAL 수신 — stockCode={}, rawPrice={}", stockCode, rawPrice);
+
+                    if (stockCode == null || rawPrice == null) {
+                        log.warn("[Kiwoom] REAL 필드 누락 — stockCode={}, rawPrice={}", stockCode, rawPrice);
+                        return;
+                    }
 
                     // 현재가는 부호(+/-)가 붙을 수 있음 — 제거 후 파싱
                     long price = Long.parseLong(rawPrice.replaceAll("[^0-9]", ""));
@@ -255,7 +308,7 @@ public class KiwoomWebSocketClient implements ApplicationListener<ApplicationRea
                 }
 
             } catch (Exception e) {
-                log.debug("[Kiwoom] 메시지 파싱 실패: {}", e.getMessage());
+                log.warn("[Kiwoom] 메시지 파싱 실패: {} / raw={}", e.getMessage(), raw);
             }
         }
     }
