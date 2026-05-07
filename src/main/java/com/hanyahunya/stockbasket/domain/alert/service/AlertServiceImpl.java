@@ -6,6 +6,7 @@ import com.hanyahunya.stockbasket.domain.alert.entity.AlertType;
 import com.hanyahunya.stockbasket.domain.alert.repository.AlertRepository;
 import com.hanyahunya.stockbasket.domain.alert.trigger.PriceTrigger;
 import com.hanyahunya.stockbasket.domain.alert.trigger.TriggerResult;
+import com.hanyahunya.stockbasket.domain.mail.service.MailService;
 import com.hanyahunya.stockbasket.domain.stock.entity.Stock;
 import com.hanyahunya.stockbasket.domain.stock.repository.StockRepository;
 import com.hanyahunya.stockbasket.domain.user.entity.User;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -37,6 +39,7 @@ public class AlertServiceImpl implements AlertService {
     private final UserSettingRepository userSettingRepository;
     private final PriceStore priceStore;
     private final List<PriceTrigger> triggers;
+    private final MailService mailService;
 
     @Override
     public List<AlertResponse> getMyAlerts(UUID userId) {
@@ -118,8 +121,31 @@ public class AlertServiceImpl implements AlertService {
                     priceStore.recordAlert(userId, stockCode, result.alertType());
                     log.info("[Alert] {} {} {}% userId={}", stockCode, result.alertType(),
                             String.format("%.2f", result.changeRate()), userId);
+
+                    if (setting.isEmailAlertEnabled()) {
+                        sendVolatilityAlertEmail(user, stock, result, current, reference, setting);
+                    }
                 }
             }
+        }
+    }
+
+    private void sendVolatilityAlertEmail(User user, Stock stock, TriggerResult result,
+                                           long currentPrice, long referencePrice, UserSetting setting) {
+        try {
+            boolean isSpike = result.alertType() == AlertType.PRICE_SPIKE;
+            Map<String, Object> vars = Map.of(
+                    "stockName",      stock.getName(),
+                    "alertLabel",     isSpike ? "급등" : "급락",
+                    "changeRate",     String.format("%.2f", Math.abs(result.changeRate())),
+                    "currentPrice",   String.format("%,d", currentPrice),
+                    "referencePrice", String.format("%,d", referencePrice),
+                    "threshold",      String.format("%.1f", setting.getVolatilityThresholdPercent())
+            );
+            String subject = "[StockBasket] %s 주가 %s 알림".formatted(stock.getName(), isSpike ? "급등" : "급락");
+            mailService.sendTemplate(List.of(user.getEmail()), subject, "alert/price-volatility", vars);
+        } catch (Exception e) {
+            log.warn("[Alert] 이메일 발송 실패 userId={} stock={}", user.getId(), stock.getStockCode(), e);
         }
     }
 
