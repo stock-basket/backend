@@ -1,0 +1,64 @@
+spring:
+  application:
+    name: stockbasket-test
+
+  # ── 인메모리 DB (MySQL 대신) ─────────────────────────────────────────
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL;NON_KEYWORDS=VALUE
+    username: sa
+    password:
+
+  jpa:
+    hibernate.ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: false
+
+  # ── 메일 (JavaMailSender 는 @MockBean 으로 대체) ────────────────────
+  mail:
+    host: localhost
+    port: 1025
+    username: test@example.com
+    password: test
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+            required: false
+
+# ── JWT ────────────────────────────────────────────────────────────────
+jwt:
+  secret: test-secret-key-that-is-long-enough-for-hmac-sha256-algorithm
+  access-token-validity-ms: 3600000
+
+# ── AI API (외부 호출 없음 — @Value 주입용 더미값) ─────────────────────
+openai:
+  api-key: test-openai-key
+  model: gpt-4o-mini
+
+claude:
+  api-key: test-claude-key
+  model: claude-3-haiku-20240307
+
+llm:
+  gemini:
+    api-key: test-gemini-key
+    model: gemini-1.5-flash
+
+# ── Naver Search (@Value 주입용 더미값) ────────────────────────────────
+naver:
+  search:
+    client-id: test-naver-client-id
+    client-secret: test-naver-client-secret
+
+# ── Kiwoom (KiwoomTokenManager, KiwoomWebSocketClient 는 @MockBean) ────
+kiwoom:
+  token-url: http://localhost/mock/token
+  ws-url: ws://localhost/mock/ws
+  appkey: test-appkey
+  secretkey: test-secretkey
