@@ -34,11 +34,14 @@ public class NewsAnalysis {
     @Column(columnDefinition = "TEXT")
     private String aiAnalysis;
 
-    /**
-     * ai 판단 결과 (짧은 ai comment 느씸)
-     */
     @Column(columnDefinition = "TEXT")
     private String aiVerdict;
+
+    @Column(columnDefinition = "TEXT")
+    private String keywords;
+
+    @Column(columnDefinition = "TEXT")
+    private String keyPoints;
 
     private LocalDateTime analyzedAt;
 

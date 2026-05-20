@@ -15,13 +15,16 @@ import java.util.Map;
 @Slf4j
 @Component
 @NoArgsConstructor(access = AccessLevel.PACKAGE)
-public class ClaudeService extends AbstractLLMService {
+public class NvidiaService extends AbstractLLMService {
 
-    @Value("${claude.api-key:}")
+    @Value("${llm.nvidia.api-key:}")
     private String apiKey;
 
-    @Value("${claude.model:claude-haiku-4-5-20251001}")
+    @Value("${llm.nvidia.model:meta/llama-3.1-405b-instruct}")
     private String model;
+
+    @Value("${llm.nvidia.base-url:https://integrate.api.nvidia.com/v1}")
+    private String baseUrl;
 
     @Override
     public String analyze(String prompt) {
@@ -29,41 +32,41 @@ public class ClaudeService extends AbstractLLMService {
 
         Map<String, Object> body = Map.of(
                 "model", model,
-                "max_tokens", 2048,
-                "system", SYSTEM_PROMPT,
-                "messages", List.of(Map.of("role", "user", "content", prompt))
+                "messages", List.of(
+                        Map.of("role", "system", "content", SYSTEM_PROMPT),
+                        Map.of("role", "user", "content", prompt)
+                )
         );
 
         String response = RestClient.create()
                 .post()
-                .uri("https://api.anthropic.com/v1/messages")
-                .header("x-api-key", apiKey)
-                .header("anthropic-version", "2023-06-01")
+                .uri(baseUrl + "/chat/completions")
+                .header("Authorization", "Bearer " + apiKey)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(body)
                 .retrieve()
                 .body(String.class);
 
-        return parseClaudeResponse(response);
+        return parseChatCompletionResponse(response);
     }
 
-    private String parseClaudeResponse(String response) {
+    private String parseChatCompletionResponse(String response) {
         if (response == null) return null;
         try {
             tools.jackson.databind.ObjectMapper mapper = new tools.jackson.databind.ObjectMapper();
             tools.jackson.databind.JsonNode root = mapper.readTree(response);
-            tools.jackson.databind.JsonNode textNode = root.path("content").path(0).path("text");
-            if (!textNode.isMissingNode()) {
-                return extractJson(textNode.asText());
+            tools.jackson.databind.JsonNode content = root.path("choices").path(0).path("message").path("content");
+            if (!content.isMissingNode()) {
+                return extractJson(content.asText());
             }
         } catch (Exception e) {
-            log.warn("[Claude] 응답 파싱 실패: {}", e.getMessage());
+            log.warn("[NVIDIA] 응답 파싱 실패: {}", e.getMessage());
         }
         return null;
     }
 
     @Override
     public LLMType getAiType() {
-        return LLMType.CLAUDE;
+        return LLMType.NVIDIA;
     }
 }
